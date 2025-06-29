@@ -1,0 +1,15 @@
+async function testApiConnection() {
+    try {
+        const response = await fetch('http://localhost:8080/allemployees');
+        console.log('Тест подключения:');
+        console.log('Статус:', response.status);
+        console.log('Заголовки:', [...response.headers.entries()]);
+        const data = await response.json().catch(() => null);
+        console.log('Данные:', data);
+        return true;
+    } catch (error) {
+        console.error('Ошибка подключения:', error);
+        return false;
+    }
+}
+testApiConnection();
