@@ -1,4 +1,4 @@
-package apifunc
+package db
 
 import (
 	"encoding/json"
@@ -6,17 +6,16 @@ import (
 	"net/http"
 
 	_ "github.com/lib/pq"
-	"github.com/milanakonova/dev/db"
 )
 
-func СreateNewEmployee(database *db.Database) http.HandlerFunc {
+func СreateNewEmployee(database *Database) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
 			http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 			return
 		}
 
-		var newEmp db.NewEmployee
+		var newEmp NewEmployee
 		if err := json.NewDecoder(r.Body).Decode(&newEmp); err != nil {
 			http.Error(w, "Невалидный JSON", http.StatusBadRequest)
 			return
@@ -34,7 +33,7 @@ func СreateNewEmployee(database *db.Database) http.HandlerFunc {
 		}
 
 		// Получаем созданного сотрудника для ответа
-		var emp db.Employee
+		var emp Employee
 		err = database.QueryRow(
 			"SELECT employees_id, fio, shift FROM employees WHERE employees_id = $1",
 			id,

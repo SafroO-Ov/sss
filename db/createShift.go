@@ -8,14 +8,14 @@ import (
 )
 
 // CreateNewShift создаёт новую смену для сотрудника CreateNewShift(db, employeeID, requestTime)
-func CreateNewShift(database *db.Database, employeeID int, requestTime time.Time) (*db.Shift, error) {
+func CreateNewShift(database *Database, employeeID int, requestTime time.Time) (*Shift, error) {
 	// Проверяем валидность подключения к БД
 	if database == nil {
 		return nil, fmt.Errorf("невалидное подключение к БД")
 	}
 
 	// Создаем объект новой смены
-	newShift := db.NewShift{
+	newShift := NewShift{
 		Date:       requestTime.Format("2006-01-02"),
 		Duration:   []string{requestTime.Format("15:04:05")},
 		Type:       "дневная",
@@ -29,7 +29,7 @@ func CreateNewShift(database *db.Database, employeeID int, requestTime time.Time
 		RETURNING shift_id, date, duration, night_time, day_time, type, on_shift, employees_id`
 
 	var (
-		createdShift db.Shift
+		createdShift Shift
 		durationArr  pq.StringArray // Используем для сканирования массива
 	)
 	err := database.QueryRow(

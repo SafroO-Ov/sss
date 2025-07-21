@@ -1,14 +1,13 @@
-package apifunc
+package db
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/lib/pq"
-	"github.com/milanakonova/dev/db"
 )
 
-func UpdateShiftDuration(database *db.Database, shift *db.Shift) error {
+func UpdateShiftDuration(database *Database, shift *Shift) error {
 	// Проверяем количество элементов в duration
 	if len(shift.Duration)%2 == 0 {
 		// Четное количество - завершаем смену
@@ -18,7 +17,7 @@ func UpdateShiftDuration(database *db.Database, shift *db.Shift) error {
 
 		if err1 == nil && err2 == nil {
 			// Рассчитываем ночные и дневные часы
-			nightHours, dayHours := calculateShiftHours(startTime, endTime)
+			nightHours, dayHours := CalculateShiftHours(startTime, endTime)
 			fmt.Println(shift.NightTime, shift.DayTime)
 			// Обновляем суммарное время
 			shift.NightTime += nightHours
