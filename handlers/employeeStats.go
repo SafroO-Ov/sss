@@ -24,7 +24,6 @@ func EmployeeStatsHandler(w http.ResponseWriter, r *http.Request, database *db.D
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 
 	// Для предварительных OPTIONS запросов
 	if r.Method == "OPTIONS" {

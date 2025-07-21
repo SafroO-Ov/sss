@@ -8,7 +8,7 @@ import (
 	"github.com/milanakonova/dev/db"
 )
 
-func updateShiftDuration(database *db.Database, shift *db.Shift) error {
+func UpdateShiftDuration(database *db.Database, shift *db.Shift) error {
 	// Проверяем количество элементов в duration
 	if len(shift.Duration)%2 == 0 {
 		// Четное количество - завершаем смену
@@ -56,7 +56,7 @@ func updateShiftDuration(database *db.Database, shift *db.Shift) error {
 }
 
 // calculateShiftHours рассчитывает ночные и дневные часы между двумя временными точками
-func calculateShiftHours(startTime, endTime time.Time) (nightHours, dayHours int) {
+func CalculateShiftHours(startTime, endTime time.Time) (nightHours, dayHours int) {
 	const (
 		nightStart = 22 // 22:00
 		nightEnd   = 7  // 07:00

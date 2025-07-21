@@ -1,11 +1,10 @@
-package apifunc
+package db
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/lib/pq"
-	"github.com/milanakonova/dev/db"
 )
 
 // CreateNewShift создаёт новую смену для сотрудника CreateNewShift(db, employeeID, requestTime)

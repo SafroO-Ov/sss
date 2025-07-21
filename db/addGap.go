@@ -1,15 +1,15 @@
-package apifunc
+package db
 
 import (
 	"fmt"
 	"log"
 	"time"
 
-	"github.com/milanakonova/dev/db"
+	"github.com/milanakonova/dev/apifunc"
 )
 
 // ProcessEmployeeShift обрабатывает смену сотрудника
-func ProcessEmployeeShift(database *db.Database, employeeID int, requestTime time.Time) (shiftID int, err error) {
+func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.Time) (shiftID int, err error) {
 	// 1. Получаем данные сотрудника из БД
 	empl, err := database.GetByIdEmployee(employeeID)
 	if err != nil {
@@ -28,7 +28,7 @@ func ProcessEmployeeShift(database *db.Database, employeeID int, requestTime tim
 			sh.Duration = append(sh.Duration, requestTime.Format("15:04:05"))
 
 			// Обновляем смену в БД
-			err = updateShiftDuration(database, sh)
+			err = apifunc.UpdateShiftDuration(database, sh)
 			if err != nil {
 				return 0, err
 			}
@@ -45,7 +45,7 @@ func ProcessEmployeeShift(database *db.Database, employeeID int, requestTime tim
 			// добавить чтоб хранилось и считалось в секундах
 			if hoursPassed >= 7 {
 				// Создаем новую смену
-				newsh, err := CreateNewShift(database, employeeID, requestTime)
+				newsh, err := apifunc.CreateNewShift(database, employeeID, requestTime)
 				if err != nil {
 					fmt.Println(err)
 					return 0, err
@@ -55,7 +55,7 @@ func ProcessEmployeeShift(database *db.Database, employeeID int, requestTime tim
 				// Добавляем текущее время в duration
 				sh.Duration = append(sh.Duration, requestTime.Format("15:04:05"))
 
-				err := updateShiftDuration(database, sh)
+				err := apifunc.UpdateShiftDuration(database, sh)
 				if err != nil {
 					fmt.Println(err)
 					return 0, err
@@ -65,7 +65,7 @@ func ProcessEmployeeShift(database *db.Database, employeeID int, requestTime tim
 		return sh.ID, err
 
 	} else {
-		newshift, err := CreateNewShift(database, employeeID, requestTime)
+		newshift, err := apifunc.CreateNewShift(database, employeeID, requestTime)
 		if err != nil {
 			log.Println("Ошибка при запросе3")
 			return 0, err
