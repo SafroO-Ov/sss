@@ -66,21 +66,21 @@ func GetShiftStatsMore(database *Database, employeeID int, periodType string) (*
 
 	// Выполняем запрос для получения статистики
 	query := `
-		SELECT 
-			COUNT(*) as shift_count,
-			SUM(CASE WHEN s.type = 'night' THEN 1 ELSE 0 END) as night_shifts,
-			COALESCE(SUM(s.day_time + s.night_time), 0) as total_hours,
-			COALESCE(SUM(s.night_time), 0) as night_hours,
-			COALESCE(SUM(s.day_time), 0) as day_hours,
-			COALESCE(SUM(CASE 
-				WHEN (s.day_time + s.night_time) > 8 THEN (s.day_time + s.night_time) - 8 
-				ELSE 0 
-			END), 0) as overtime_hours
-		FROM shifts s
-		JOIN employees e ON s.employee_id = e.employees_id
-		WHERE e.employees_id = $1
-		AND s.date BETWEEN NOW() - $2::INTERVAL AND NOW()
-	`
+        SELECT 
+    COUNT(*) as shift_count,
+    SUM(CASE WHEN s.type = 'ночная' THEN 1 ELSE 0 END) as night_shifts,
+    COALESCE(SUM(s.day_time + s.night_time), 0) as total_hours,
+    COALESCE(SUM(s.night_time), 0) as night_hours,
+    -- COALESCE(SUM(s.day_time), 0) as day_hours,  // Убрано
+    COALESCE(SUM(CASE 
+        WHEN (s.day_time + s.night_time) > 8 THEN (s.day_time + s.night_time) - 8 
+        ELSE 0 
+    END), 0) as overtime_hours
+        FROM shifts s
+        JOIN employees e ON s.employees_id = e.employees_id
+        WHERE e.employees_id = $1
+        AND to_date(s.date, 'YYYY-MM-DD') BETWEEN (NOW() - $2::INTERVAL)::date AND NOW()::date
+    `
 
 	var stats ShiftStatsMore
 	err = database.QueryRow(query, employeeID, timeRange).Scan(
@@ -90,13 +90,15 @@ func GetShiftStatsMore(database *Database, employeeID int, periodType string) (*
 		&stats.NightHours,
 		&stats.OverTime,
 	)
-	if timeRange == "7 days" {
-		stats.OverTime -= 40
-	} else {
-		stats.OverTime -= 160
-	}
 	if err != nil {
 		return nil, fmt.Errorf("ошибка получения статистики: %w", err)
+	}
+
+	// Корректировка переработки
+	if timeRange == "7 days" {
+		stats.OverTime = max(stats.OverTime-40, 0)
+	} else {
+		stats.OverTime = max(stats.OverTime-160, 0)
 	}
 
 	return &stats, nil

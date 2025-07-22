@@ -51,7 +51,7 @@ func EmployeeStatsHandler(w http.ResponseWriter, r *http.Request, database *db.D
 	if request.Mode == "current" {
 		stats, err := db.GetCurrentShiftStats(database, request.EmployeeID)
 		if err != nil {
-			log.Printf("Ошибка при получении статистики: %v", err)
+			log.Printf("Ошибка при получении статистики1: %v", err)
 			http.Error(w, "Ошибка при обработке запроса", http.StatusInternalServerError)
 			return
 		}
@@ -61,7 +61,7 @@ func EmployeeStatsHandler(w http.ResponseWriter, r *http.Request, database *db.D
 	} else {
 		stats, err := db.GetShiftStatsMore(database, request.EmployeeID, request.Mode)
 		if err != nil {
-			log.Printf("Ошибка при получении статистики: %v", err)
+			log.Printf("Ошибка при получении статистики2: %v", err)
 			http.Error(w, "Ошибка при обработке запроса", http.StatusInternalServerError)
 			return
 		}
