@@ -59,7 +59,6 @@ func EmployeeStatsHandler(w http.ResponseWriter, r *http.Request, database *db.D
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(stats)
 	} else {
-		// Получение статистики (заглушка - реализуйте свою логику)
 		stats, err := db.GetShiftStatsMore(database, request.EmployeeID, request.Mode)
 		if err != nil {
 			log.Printf("Ошибка при получении статистики: %v", err)

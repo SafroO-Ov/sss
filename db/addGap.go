@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"time"
-
-	"github.com/milanakonova/dev/apifunc"
 )
 
 // ProcessEmployeeShift обрабатывает смену сотрудника
@@ -28,7 +26,7 @@ func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.T
 			sh.Duration = append(sh.Duration, requestTime.Format("15:04:05"))
 
 			// Обновляем смену в БД
-			err = apifunc.UpdateShiftDuration(database, sh)
+			err = UpdateShiftDuration(database, sh)
 			if err != nil {
 				return 0, err
 			}
@@ -45,7 +43,7 @@ func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.T
 			// добавить чтоб хранилось и считалось в секундах
 			if hoursPassed >= 7 {
 				// Создаем новую смену
-				newsh, err := apifunc.CreateNewShift(database, employeeID, requestTime)
+				newsh, err := CreateNewShift(database, employeeID, requestTime)
 				if err != nil {
 					fmt.Println(err)
 					return 0, err
@@ -55,7 +53,7 @@ func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.T
 				// Добавляем текущее время в duration
 				sh.Duration = append(sh.Duration, requestTime.Format("15:04:05"))
 
-				err := apifunc.UpdateShiftDuration(database, sh)
+				err := UpdateShiftDuration(database, sh)
 				if err != nil {
 					fmt.Println(err)
 					return 0, err
@@ -65,7 +63,7 @@ func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.T
 		return sh.ID, err
 
 	} else {
-		newshift, err := apifunc.CreateNewShift(database, employeeID, requestTime)
+		newshift, err := CreateNewShift(database, employeeID, requestTime)
 		if err != nil {
 			log.Println("Ошибка при запросе3")
 			return 0, err

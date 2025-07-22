@@ -3,7 +3,7 @@ package db
 // GetAllEmployees возвращает всех сотрудников из базы данных
 func GetAllEmployees(database *Database) ([]Employee, error) {
 	query := `SELECT employees_id, fio, shift FROM employees`
-	rows, err := database.Query(query) // 👈 обязательно database.DB
+	rows, err := database.Query(query)
 	if err != nil {
 		return nil, err
 	}

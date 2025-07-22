@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/milanakonova/dev/apifunc"
 	"github.com/milanakonova/dev/db"
 )
 
@@ -32,7 +31,7 @@ func EmployeeHandler(w http.ResponseWriter, r *http.Request, database *db.Databa
 	currentTime := time.Now()
 
 	// Выводим в терминал время и ID работника
-	shiftID, err := apifunc.ProcessEmployeeShift(database, request.EmployeeID, currentTime)
+	shiftID, err := db.ProcessEmployeeShift(database, request.EmployeeID, currentTime)
 	if err != nil {
 		log.Print("Ошибка с сменой у сотрудника")
 	}
