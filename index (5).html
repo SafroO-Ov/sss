@@ -3,419 +3,511 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учет рабочего времени</title>
+    <title>Учёт смен сотрудников</title>
     <style>
-        :root {
-            --primary-color: #4CAF50;
-            --hover-color: #45a049;
-            --background: #f5f5f5;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --secondary-text: #7f8c8d;
-            --error-color: #e74c3c;
-            --border-radius: 8px;
-            --box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            --transition: all 0.3s ease;
-        }
-        
-        * {
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
-            background-color: var(--background);
-            color: var(--text-color);
-            line-height: 1.6;
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
             padding: 20px;
+            margin: 0;
         }
-        
+
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
-            background: var(--card-bg);
+            background: white;
             padding: 30px;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
         }
-        
+
         h1 {
             text-align: center;
+            color: #333;
             margin-bottom: 30px;
-            font-size: 2.2rem;
-            color: var(--text-color);
         }
-        
-        /* Стили для карточек сотрудников */
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-size: 18px;
+            color: #666;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
         .employees-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 20px;
-            margin-bottom: 40px;
+            margin-top: 30px;
         }
-        
+
         .employee-card {
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            text-align: center;
-            cursor: pointer;
-            transition: var(--transition);
             border: 1px solid #e0e0e0;
-        }
-        
-        .employee-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            border-color: var(--primary-color);
-        }
-        
-        .employee-name {
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
-            color: var(--text-color);
-        }
-        
-        .employee-position {
-            color: var(--secondary-text);
-            font-size: 0.9rem;
-        }
-        
-        /* Состояния загрузки и ошибок */
-        .loading-message, 
-        .error-message, 
-        .no-data {
-            grid-column: 1 / -1;
+            padding: 20px;
+            border-radius: 8px;
+            cursor: pointer;
             text-align: center;
-            padding: 30px;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
-        
-        .loading-message {
-            color: var(--secondary-text);
+
+        .employee-card:hover {
+            background: #e3f2fd;
+            border-color: #64b5f6;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .employee-card strong {
+            display: block;
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .stats-section {
+            display: none;
+            margin-top: 30px;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .stats-header {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
         }
-        
-        .error-message {
-            color: var(--error-color);
+
+        .toggle-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        
-        .no-data {
-            color: var(--secondary-text);
-        }
-        
-        /* Кнопки */
-        .retry-btn {
-            margin-top: 15px;
+
+        .toggle-buttons button {
             padding: 10px 20px;
-            background: var(--primary-color);
+            border: none;
+            background: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+        }
+
+        .toggle-buttons button:hover {
+            background: #bdbdbd;
+        }
+
+        .toggle-buttons button.active {
+            background: #1976d2;
+            color: white;
+        }
+
+        .stat-table {
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-table th {
+            background: #1976d2;
+            color: white;
+            font-weight: 500;
+        }
+
+        .stat-table th, .stat-table td {
+            padding: 12px 15px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .stat-table tr:nth-child(even) {
+            background-color: #f5f5f5;
+        }
+
+        .back-button {
+            margin-top: 25px;
+            padding: 10px 20px;
+            background: #757575;
             color: white;
             border: none;
-            border-radius: var(--border-radius);
+            border-radius: 6px;
             cursor: pointer;
-            transition: var(--transition);
-            font-size: 1rem;
+            transition: background 0.2s ease;
+            font-size: 15px;
         }
-        
-        .retry-btn:hover {
-            background: var(--hover-color);
+
+        .back-button:hover {
+            background: #616161;
         }
-        
-        /* Помощь при ошибках */
-        .connection-help {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: var(--secondary-text);
-            text-align: left;
-            padding: 15px;
-            background: #f9f9f9;
-            border-radius: var(--border-radius);
-            border-left: 4px solid var(--error-color);
+
+        .no-data {
+            text-align: center;
+            padding: 30px;
+            color: #757575;
+            font-size: 16px;
         }
-        
-        /* Анимация загрузки */
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .loader {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
-        
-        /* Адаптивность */
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
             }
-            
-            .employees-grid {
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+
+            .stats-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .toggle-buttons {
+                width: 100%;
+            }
+
+            .toggle-buttons button {
+                flex: 1;
+                min-width: 80px;
             }
         }
-        
+
         @media (max-width: 480px) {
-            .container {
-                padding: 15px;
-            }
-            
-            h1 {
-                font-size: 1.8rem;
-            }
-            
             .employees-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .stat-table {
+                font-size: 14px;
+            }
+
+            .stat-table th, .stat-table td {
+                padding: 8px 10px;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container" id="employees-container">
-        <h1>Учет рабочего времени сотрудников</h1>
-        <div class="employees-grid" id="employees-grid">
-            <div class="loading-message">
-                <div class="loader"></div>
-                <p>Загрузка списка сотрудников...</p>
+<div class="container">
+    <h1>Учёт смен сотрудников</h1>
+
+    <!-- Выбор сотрудника -->
+    <div id="employees-view">
+        <div id="loading-employees" class="loading">Загрузка списка сотрудников...</div>
+        <div id="employees-error" class="error-message" style="display: none;"></div>
+        <div class="employees-grid" id="employees-grid" style="display: none;"></div>
+    </div>
+
+    <!-- Отображение статистики -->
+    <div class="stats-section" id="stats-view">
+        <div class="stats-header">
+            <h2 id="employee-name">Сотрудник</h2>
+            <div class="toggle-buttons">
+                <button data-mode="current" class="active">Текущая смена</button>
+                <button data-mode="week">За неделю</button>
+                <button data-mode="month">За месяц</button>
             </div>
         </div>
-    </div>
 
-    <div class="container" id="time-records-container" style="display: none;">
-        <!-- Интерфейс для отображения смен будет здесь -->
-    </div>
+        <div id="loading-stats" class="loading" style="display: none;">Загрузка статистики...</div>
+        <div id="stats-error" class="error-message" style="display: none;"></div>
 
-    <script>
-        // Глобальное состояние приложения
-        const state = {
-            employees: [],
-            records: JSON.parse(localStorage.getItem('workRecords')) || [],
-            selectedEmployeeId: null,
-            currentDate: new Date(),
-            currentPeriod: 'day',
-            isLoading: false
-        };
-        
-        // DOM элементы
-        const elements = {
-            employeesContainer: document.getElementById('employees-container'),
-            timeRecordsContainer: document.getElementById('time-records-container'),
-            employeesGrid: document.getElementById('employees-grid'),
-            recordsTable: document.getElementById('records-table')?.querySelector('tbody'),
-            statsContainer: document.getElementById('stats-container'),
-            currentDateTitle: document.getElementById('current-date-title'),
-            periodButtons: document.querySelectorAll('.period-btn')
-        };
-        
-        // Конфигурация API
-        const apiConfig = {
-            baseUrl: window.location.hostname === 'localhost' 
-                ? 'http://localhost:8080' 
-                : '',
-            endpoints: {
-                employees: '/allemployees',
-                shifts: '/shifts'
-            },
-            retryCount: 3,
-            retryDelay: 1000
-        };
-        
-        // Инициализация приложения
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadEmployees();
-            setupEventListeners();
-            
-            // Для разработки - можно раскомментировать
-            // initTestData(); 
+        <div id="stats-content">
+            <table class="stat-table" id="stats-table">
+                <thead>
+                <tr id="stats-head"></tr>
+                </thead>
+                <tbody>
+                <tr id="stats-body"></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <button class="back-button" onclick="backToEmployees()">← Назад к списку сотрудников</button>
+    </div>
+</div>
+
+<script>
+    // Настройки API
+    const apiConfig = {
+        baseUrl: 'http://localhost:8080',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    };
+
+    let selectedEmployee = null;
+
+    document.addEventListener("DOMContentLoaded", () => {
+        // Инициализация кнопок переключения режимов
+        document.querySelectorAll(".toggle-buttons button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".toggle-buttons button").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                loadStats(btn.dataset.mode);
+            });
         });
-        
-        // ========== API функции ==========
-        async function fetchWithRetry(url, options = {}, retries = apiConfig.retryCount) {
-            try {
-                const response = await fetch(url, options);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                return await response.json();
-            } catch (error) {
-                if (retries > 0) {
-                    await new Promise(resolve => setTimeout(resolve, apiConfig.retryDelay));
-                    return fetchWithRetry(url, options, retries - 1);
-                }
-                throw error;
-            }
-        }
-        
-        async function loadEmployees() {
-            state.isLoading = true;
-            updateLoadingState();
-            
-            try {
-                const data = await fetchWithRetry(
-                    apiConfig.baseUrl + apiConfig.endpoints.employees,
-                    {
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        }
-                    }
-                );
-                
-                if (!Array.isArray(data)) {
-                    throw new Error("Некорректный формат данных от сервера");
-                }
-                
-                state.employees = data;
-                renderEmployees();
-                
-            } catch (error) {
-                console.error('Ошибка загрузки сотрудников:', error);
-                showError(`Ошибка при загрузке данных: ${error.message}`);
-            } finally {
-                state.isLoading = false;
-                updateLoadingState();
-            }
-        }
-        
-        // ========== Рендер функций ==========
-        function updateLoadingState() {
-            if (state.isLoading) {
-                elements.employeesGrid.innerHTML = `
-                    <div class="loading-message">
-                        <div class="loader"></div>
-                        <p>Загрузка данных...</p>
-                    </div>
-                `;
-            }
-        }
-        
-        function renderEmployees() {
-            if (state.employees.length === 0) {
-                elements.employeesGrid.innerHTML = `
-                    <div class="no-data">
-                        Нет данных о сотрудниках
-                        <button class="retry-btn" onclick="loadEmployees()">Обновить</button>
-                    </div>
-                `;
-                return;
-            }
-            
-            elements.employeesGrid.innerHTML = '';
-            
-            state.employees.forEach(employee => {
-                const card = document.createElement('div');
-                card.className = 'employee-card';
-                card.innerHTML = `
-                    <div class="employee-name">${employee.fio}</div>
-                    <div class="employee-position">${getShiftText(employee.shift)}</div>
-                `;
-                
-                card.addEventListener('click', () => selectEmployee(employee.employees_id));
-                elements.employeesGrid.appendChild(card);
+
+        // Загрузка списка сотрудников при загрузке страницы
+        loadEmployees();
+    });
+
+    async function loadEmployees() {
+        const loadingElement = document.getElementById("loading-employees");
+        const errorElement = document.getElementById("employees-error");
+        const gridElement = document.getElementById("employees-grid");
+
+        try {
+            // Показываем индикатор загрузки
+            loadingElement.style.display = "block";
+            errorElement.style.display = "none";
+            gridElement.style.display = "none";
+
+            const res = await fetch(`${apiConfig.baseUrl}/allemployees`, {
+                method: 'GET',
+                headers: apiConfig.headers,
+                mode: 'cors' // Явно указываем режим CORS
             });
-        }
-        
-        function showError(message) {
-            elements.employeesGrid.innerHTML = `
-                <div class="error-message">
-                    ${message}
-                    <div class="connection-help">
-                        <p>Проверьте:</p>
-                        <ol>
-                            <li>Сервер запущен на <strong>${apiConfig.baseUrl}</strong></li>
-                            <li>Endpoint <strong>${apiConfig.endpoints.employees}</strong> доступен</li>
-                            <li>Откройте <a href="${apiConfig.baseUrl}${apiConfig.endpoints.employees}" target="_blank">эту ссылку</a></li>
-                        </ol>
-                        <button class="retry-btn" onclick="loadEmployees()">Повторить попытку</button>
-                    </div>
-                </div>
-            `;
-        }
-        
-        function getShiftText(shiftNumber) {
-            const shifts = {
-                1: "Дневная смена (08:00-20:00)",
-                2: "Вечерняя смена (16:00-00:00)",
-                3: "Ночная смена (00:00-08:00)"
-            };
-            return shifts[shiftNumber] || `Смена #${shiftNumber}`;
-        }
-        
-        // ========== Основные функции ==========
-        function selectEmployee(employeeId) {
-            state.selectedEmployeeId = employeeId;
-            elements.employeesContainer.style.display = 'none';
-            elements.timeRecordsContainer.style.display = 'block';
-            
-            // Здесь можно загрузить смены для сотрудника
-            // loadShifts(employeeId);
-            
-            updateRecordsView();
-        }
-        
-        function backToEmployees() {
-            state.selectedEmployeeId = null;
-            elements.employeesContainer.style.display = 'block';
-            elements.timeRecordsContainer.style.display = 'none';
-        }
-        
-        function updateRecordsView() {
-            // Здесь будет логика обновления отображения смен
-        }
-        
-        // ========== Вспомогательные функции ==========
-        function setupEventListeners() {
-            // Настройка обработчиков событий
-        }
-        
-        function formatDate(date) {
-            return date.toLocaleDateString('ru-RU', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-        }
-        
-        // ========== Для разработки ==========
-        function initTestData() {
-            if (state.records.length === 0) {
-                const today = new Date();
-                const lastMonth = new Date(today);
-                lastMonth.setMonth(today.getMonth() - 1);
-                
-                // Генерация тестовых данных
-                for (let i = 0; i < 30; i++) {
-                    const date = new Date(lastMonth);
-                    date.setDate(lastMonth.getDate() + i);
-                    
-                    state.employees.forEach(emp => {
-                        if (Math.random() > 0.3) {
-                            state.records.push({
-                                employeeId: emp.employees_id.toString(),
-                                date: date.toISOString().split('T')[0],
-                                timeIn: `${8 + Math.floor(Math.random() * 2)}:${Math.random() > 0.5 ? '00' : '30'}`,
-                                timeOut: `${17 + Math.floor(Math.random() * 3)}:${Math.random() > 0.5 ? '00' : '30'}`,
-                                hours: 8 + (Math.random() * 2 - 1)
-                            });
-                        }
+
+            if (!res.ok) {
+                throw new Error(`Ошибка сервера: ${res.status}`);
+            }
+
+            const employees = await res.json();
+
+            if (!employees || !Array.isArray(employees)) {
+                throw new Error("Некорректный формат данных о сотрудниках");
+            }
+
+            // Очищаем и заполняем сетку сотрудников
+            gridElement.innerHTML = "";
+
+            if (employees.length === 0) {
+                gridElement.innerHTML = `<div class="no-data">Нет данных о сотрудниках</div>`;
+            } else {
+                employees.forEach(emp => {
+                    const card = document.createElement("div");
+                    card.className = "employee-card";
+                    card.innerHTML = `
+                        <strong>${emp.fio || 'Не указано'}</strong>
+                        <div>Смена: ${emp.shift || 'Не указана'}</div>
+                    `;
+                    card.addEventListener("click", () => {
+                        selectEmployee(emp);
                     });
-                }
-                
-                localStorage.setItem('workRecords', JSON.stringify(state.records));
+                    gridElement.appendChild(card);
+                });
             }
+
+            // Переключаем видимость элементов
+            loadingElement.style.display = "none";
+            gridElement.style.display = "grid";
+
+        } catch (error) {
+            console.error("Ошибка загрузки сотрудников:", error);
+            loadingElement.style.display = "none";
+
+            // Специальная обработка CORS ошибки
+            if (error.message.includes('Failed to fetch') || error.message.includes('Access-Control-Allow-Origin')) {
+                errorElement.textContent = "Ошибка доступа к серверу. Проблема с CORS политикой. Убедитесь, что сервер правильно настроен.";
+            } else {
+                errorElement.textContent = `Не удалось загрузить список сотрудников: ${error.message}`;
+            }
+
+            errorElement.style.display = "block";
         }
-    </script>
+    }
+
+    function selectEmployee(employee) {
+        selectedEmployee = employee;
+        document.getElementById("employee-name").textContent = employee.fio || 'Сотрудник';
+
+        // Переключаем видимость разделов
+        document.getElementById("employees-view").style.display = "none";
+        document.getElementById("stats-view").style.display = "block";
+
+        // Сбрасываем состояние статистики
+        document.getElementById("stats-error").style.display = "none";
+        document.getElementById("stats-table").style.display = "table";
+
+        // Загружаем статистику для текущей смены
+        loadStats("current");
+    }
+
+    async function loadStats(mode) {
+        if (!selectedEmployee) {
+            console.error("Не выбран сотрудник");
+            return;
+        }
+
+        const loadingElement = document.getElementById("loading-stats");
+        const errorElement = document.getElementById("stats-error");
+        const tableElement = document.getElementById("stats-table");
+        const statsContent = document.getElementById("stats-content");
+
+        try {
+            // Показываем индикатор загрузки
+            loadingElement.style.display = "block";
+            errorElement.style.display = "none";
+            tableElement.style.display = "none";
+
+            const response = await fetch(`${apiConfig.baseUrl}/employee-stats`, {
+                method: "POST",
+                headers: apiConfig.headers,
+                body: JSON.stringify({
+                    employee_id: selectedEmployee.employees_id,
+                    mode: mode
+                }),
+                mode: 'cors' // Явно указываем режим CORS
+            });
+
+            // Обработка CORS ошибки
+            if (response.type === 'opaque') {
+                throw new Error("CORS политика блокирует запрос. Сервер не возвращает необходимые заголовки.");
+            }
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => null);
+                throw new Error(errorData?.message || `Ошибка сервера: ${response.status}`);
+            }
+
+            const data = await response.json();
+            console.log("Полученные данные статистики:", data);
+
+            // Обновляем таблицу статистики
+            updateStatsTable(data, mode);
+
+            // Показываем таблицу
+            loadingElement.style.display = "none";
+            tableElement.style.display = "table";
+
+        } catch (error) {
+            console.error("Ошибка загрузки статистики:", error);
+            loadingElement.style.display = "none";
+
+            // Специальная обработка CORS ошибки
+            if (error.message.includes('Failed to fetch') || error.message.includes('Access-Control-Allow-Origin')) {
+                errorElement.textContent = "Ошибка доступа к серверу. Сервер не разрешает запросы с этого домена (CORS).";
+                errorElement.innerHTML += "<br><br>Попробуйте следующее:<br>" +
+                    "1. Запустите браузер с отключенной CORS политикой (только для разработки)<br>" +
+                    "2. Настройте сервер для возврата заголовка 'Access-Control-Allow-Origin: *'<br>" +
+                    "3. Используйте прокси для обхода CORS";
+            } else {
+                errorElement.textContent = `Не удалось загрузить статистику: ${error.message}`;
+            }
+
+            errorElement.style.display = "block";
+            tableElement.style.display = "none";
+        }
+    }
+
+    function updateStatsTable(data, mode) {
+        const head = document.getElementById("stats-head");
+        const body = document.getElementById("stats-body");
+
+        // Очищаем предыдущие данные
+        head.innerHTML = "";
+        body.innerHTML = "";
+
+        // Получаем поля для текущего режима
+        const fields = getFieldsForMode(mode);
+
+        // Если нет данных
+        if (!data || Object.keys(data).length === 0) {
+            const cell = document.createElement("td");
+            cell.colSpan = fields.length;
+            cell.textContent = "Нет данных для отображения";
+            cell.className = "no-data";
+            body.appendChild(cell);
+            return;
+        }
+
+        // Заполняем заголовки и данные
+        fields.forEach(key => {
+            // Создаем заголовок столбца
+            const th = document.createElement("th");
+            th.textContent = formatKey(key);
+            head.appendChild(th);
+
+            // Создаем ячейку с данными
+            const td = document.createElement("td");
+            const value = data[key] !== undefined ? data[key] : "—";
+
+            // Форматируем числовые значения
+            if (typeof value === 'number') {
+                // Для часов показываем 2 знака после запятой
+                if (key.includes('hours')) {
+                    td.textContent = value.toFixed(2);
+                }
+                // Для целых чисел не показываем дробную часть
+                else if (Number.isInteger(value)) {
+                    td.textContent = value.toString();
+                }
+                // Для остальных чисел - 2 знака
+                else {
+                    td.textContent = value.toFixed(2);
+                }
+            }
+            // Для строковых значений
+            else {
+                td.textContent = value;
+            }
+
+            body.appendChild(td);
+        });
+    }
+
+    function getFieldsForMode(mode) {
+        // Поля для разных режимов отображения
+        const fieldsMap = {
+            current: ["total_hours", "day_hours", "night_hours"],
+            week: ["shift_count", "night_shifts", "total_hours", "night_hours", "overtime_hours"],
+            month: ["shift_count", "night_shifts", "total_hours", "night_hours", "overtime_hours"]
+        };
+
+        return fieldsMap[mode] || fieldsMap.current;
+    }
+
+    function formatKey(key) {
+        // Словарь для форматирования ключей в читаемые названия
+        const names = {
+            total_hours: "Всего часов",
+            night_hours: "Ночные часы",
+            day_hours: "Дневные часы",
+            shift_count: "Количество смен",
+            night_shifts: "Ночные смены",
+            overtime_hours: "Сверхурочные часы"
+        };
+
+        return names[key] || key;
+    }
+
+    function backToEmployees() {
+        // Возвращаемся к списку сотрудников
+        document.getElementById("stats-view").style.display = "none";
+        document.getElementById("employees-view").style.display = "block";
+    }
+
+    // Временное решение для разработки - отключение CORS (только для локальной разработки)
+    // Не использовать в production!
+    if (window.location.hostname === 'localhost') {
+        console.warn("Режим разработки: CORS проверки ослаблены");
+    }
+</script>
 </body>
 </html>
