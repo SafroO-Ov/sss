@@ -33,14 +33,19 @@ func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.T
 
 		} else {
 			// Четное количество - проверяем временной промежуток
-			lastTime, err := time.Parse("15:04:05", sh.Duration[len(sh.Duration)-1])
+
+			// Парсим последнее время из Duration с учетом даты из sh.Date
+			lastDateTimeStr := sh.Date + " " + sh.Duration[len(sh.Duration)-1]
+			lastDateTime, err := time.Parse("2006-01-02 15:04:05", lastDateTimeStr)
 			if err != nil {
 				return 0, fmt.Errorf("ошибка парсинга времени: %w", err)
 			}
 
-			currentTime, _ := time.Parse("15:04:05", requestTime.Format("15:04:05"))
-			hoursPassed := currentTime.Sub(lastTime).Hours()
-			// добавить чтоб хранилось и считалось в секундах
+			// Получаем разницу между текущим временем и последним временем в смене
+			timeDiff := requestTime.Sub(lastDateTime)
+			hoursPassed := timeDiff.Hours()
+
+			// Если прошло 7 или более часов
 			if hoursPassed >= 7 {
 				// Создаем новую смену
 				newsh, err := CreateNewShift(database, employeeID, requestTime)
@@ -50,7 +55,7 @@ func ProcessEmployeeShift(database *Database, employeeID int, requestTime time.T
 				}
 				return newsh.ID, err
 			} else {
-				// Добавляем текущее время в duration
+				// Добавляем текущее время в duration (только время без даты)
 				sh.Duration = append(sh.Duration, requestTime.Format("15:04:05"))
 
 				err := UpdateShiftDuration(database, sh)
