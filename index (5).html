@@ -167,7 +167,7 @@
 
         .employee-card .shift-info {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
             margin-top: 15px;
             padding-top: 15px;
@@ -178,6 +178,32 @@
             font-size: 14px;
             color: #495057;
             font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .shift-status {
+            font-size: 14px;
+            font-weight: 500;
+            padding: 4px 12px;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .shift-status.on {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--success-color);
+        }
+
+        .shift-status.off {
+            background-color: rgba(247, 37, 133, 0.1);
+            color: var(--danger-color);
+        }
+
+        .shift-status::before {
+            content: '●';
+            margin-right: 6px;
+            font-size: 16px;
         }
 
         .stats-section {
@@ -467,6 +493,7 @@
             }
 
             const employees = await res.json();
+            console.log("Полученные данные:", employees); // Добавлено для отладки
 
             if (!employees || !Array.isArray(employees)) {
                 throw new Error("Некорректный формат данных о сотрудниках");
@@ -480,16 +507,25 @@
                 employees.forEach(emp => {
                     const card = document.createElement("div");
                     card.className = "employee-card";
+                    
+                    // Обработка новой структуры данных
+                    const employeeData = emp.Employee || emp; // Поддержка старого и нового формата
+                    const onShift = emp.on_shift !== undefined ? emp.on_shift : (emp.OnShift !== undefined ? emp.OnShift : false);
+                    
+                    const shiftStatusClass = onShift ? 'on' : 'off';
+                    const shiftStatusText = onShift ? 'На смене' : 'Не на смене';
+                    
                     card.innerHTML = `
-                        <strong>${emp.fio || 'Не указано'}</strong>
+                        <strong>${employeeData.fio || 'Не указано'}</strong>
                         <div class="shift-info">
-                            <span class="shift-id">ID смены: ${emp.shift_id !== undefined ? emp.shift_id : emp.shift || ''}</span>
+                            <span class="shift-id">ID смены: ${employeeData.shift !== undefined ? employeeData.shift : '—'}</span>
+                            <span class="shift-status ${shiftStatusClass}">${shiftStatusText}</span>
                         </div>
                     `;
                     card.addEventListener("click", () => {
                         card.classList.add("pulse");
                         setTimeout(() => card.classList.remove("pulse"), 1000);
-                        selectEmployee(emp);
+                        selectEmployee(employeeData);
                     });
                     gridElement.appendChild(card);
                 });

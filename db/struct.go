@@ -64,3 +64,7 @@ type ShiftStatsMore struct {
 	NightHours  int `json:"night_hours"`
 	OverTime    int `json:"overtime_hours"`
 }
+type EmployeeWithShiftStatus struct {
+	Employee      // Встраиваем оригинальную структуру
+	OnShift  bool // или bool, если NULL не ожидается
+}
