@@ -28,6 +28,9 @@ func UpdateShiftDuration(database *Database, shift *Shift) error {
 			if shift.NightTime > 0 && shift.DayTime > 0 {
 				shift.Type = "гибридная"
 			}
+
+			// Обновляем дату смены на текущую дату
+			shift.Date = time.Now().Format("2006-01-02")
 		}
 
 	} else {
@@ -38,23 +41,25 @@ func UpdateShiftDuration(database *Database, shift *Shift) error {
 	// Обновляем запись в базе данных
 	_, err := database.Exec(
 		`UPDATE shifts 
-		 SET duration = $1, on_shift = $2, night_time = $3, day_time = $4, type = $5
-		 WHERE shift_id = $6`,
+         SET duration = $1, on_shift = $2, night_time = $3, 
+             day_time = $4, type = $5, date = $6
+         WHERE shift_id = $7`,
 		pq.Array(shift.Duration),
 		shift.OnShift,
 		shift.NightTime,
 		shift.DayTime,
 		shift.Type,
+		shift.Date, // Добавлено обновление даты
 		shift.ID,
 	)
 	if err != nil {
 		return fmt.Errorf("ошибка обновления смены: %w", err)
 	}
 
-	return err
+	return nil
 }
 
-// calculateShiftHours рассчитывает ночные и дневные часы между двумя временными точками
+// CalculateShiftHours рассчитывает ночные и дневные часы между двумя временными точками
 func CalculateShiftHours(startTime, endTime time.Time) (nightHours, dayHours int) {
 	const (
 		nightStart = 22 // 22:00

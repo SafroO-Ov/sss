@@ -23,8 +23,8 @@ func СreateNewEmployee(database *Database) http.HandlerFunc {
 
 		var id int
 		err := database.QueryRow(
-			"INSERT INTO employees (fio, shift) VALUES ($1, $2) RETURNING employees_id",
-			newEmp.FIO, newEmp.Shift,
+			"INSERT INTO employees (fio) VALUES ($1) RETURNING employees_id",
+			newEmp.FIO,
 		).Scan(&id)
 		if err != nil {
 			log.Printf("Ошибка вставки: %v", err)
