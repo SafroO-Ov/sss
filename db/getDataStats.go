@@ -72,10 +72,7 @@ func GetShiftStatsMore(database *Database, employeeID int, periodType string) (*
     COALESCE(SUM(s.day_time + s.night_time), 0) as total_hours,
     COALESCE(SUM(s.night_time), 0) as night_hours,
     -- COALESCE(SUM(s.day_time), 0) as day_hours,  // Убрано
-    COALESCE(SUM(CASE 
-        WHEN (s.day_time + s.night_time) > 8 THEN (s.day_time + s.night_time) - 8 
-        ELSE 0 
-    END), 0) as overtime_hours
+    COALESCE(SUM(s.day_time + s.night_time), 0) as overtime_hours
         FROM shifts s
         JOIN employees e ON s.employees_id = e.employees_id
         WHERE e.employees_id = $1
